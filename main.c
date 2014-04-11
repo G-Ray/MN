@@ -2,14 +2,12 @@
 #include <math.h>
 
 #define GRAVITATION 9.81
-#define COEFF_RESTITUTION 0.95
+#define COEFF_RESTITUTION 0.9
 #define PAS 0.025
 
 int main()
 {
     FILE *positions;
-
-    double const PAS = 0.025;
 
     double vz0 = -1;
     double z0 = 50;
@@ -17,7 +15,7 @@ int main()
     double vx0 = 1;
     double x0 = 0;
 
-    double SOL = 0;
+    double sol = 0;
 
     double t1, vx1, vz1, t, z1, x1;
 
@@ -29,8 +27,9 @@ int main()
         //TODO: decouper en fonctions
 
         // Bille qui touche le sol
-        if (z1 < SOL + 0.5) {
+        if (z1 < sol + 0.5) {
             vz1 = -vz0 * COEFF_RESTITUTION;
+            sol -= 2;
         }
         else
             vz1 = vz0 - (t1 - t) * GRAVITATION;
