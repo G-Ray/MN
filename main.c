@@ -3,15 +3,18 @@
 
 #define GRAVITATION 9.81
 #define COEFF_RESTITUTION 0.8
-#define PAS 0.025
+#define PAS 0.01
 #define DISTANCE_MARCHE 1.0
 #define HAUTEUR_MARCHE 0.5
-#define NOMBRE_MARCHES 10
+#define NOMBRE_MARCHES 12
+#define DUREE 25
 
 int main()
 {
     FILE *positions;
     FILE *escalier;
+
+    int dessous = 0;
 
     double vz0 = -1;
     double z0 = 10;
@@ -28,35 +31,41 @@ int main()
 
     double HAUTEUR_ESCALIER = NOMBRE_MARCHES * HAUTEUR_MARCHE;
 
-    for(t=0; t<=50; t+=PAS) {
+    for(t=0; t<=DUREE; t+=PAS) {
 
         t1 = t + PAS;
-        z1 = z0 + (t1 - t) * vz0;
-
-        //TODO: decouper en fonctions
-        // Bille qui touche le sol
 
         int nb_marches = x0/DISTANCE_MARCHE;
-        double h = HAUTEUR_ESCALIER - HAUTEUR_MARCHE * nb_marches;
+        double hauteur = HAUTEUR_ESCALIER - HAUTEUR_MARCHE * nb_marches;
 
-        if ( h>= 0) {
-          printf("%6.3f\t%6.3f\n", x0, h);
-          fprintf(escalier, "%6.3f\t%6.3f\n", x0, h);
-        }
+        if (hauteur >= 0) {
+            fprintf(escalier, "%6.3f\t%6.3f\n", x0, hauteur);
+        } else {
+        	hauteur = 0;
+        	fprintf(escalier, "%6.3f\t%6.3f\n", x0, 0);
+       	}
 
-        //printf("%6.3f\t\n", HAUTEUR_ESCALIER - HAUTEUR_MARCHE * nb_marches);
+        vz1 = vz0 - (t1 - t) * GRAVITATION;
 
-        if (z1 < h || z1 < SOL + 0.1)
+        if (z0 <= hauteur && dessous == 0)
         {
+        	dessous = 1;
             vz1 = -vz0 * COEFF_RESTITUTION;
         }
-        else
-            vz1 = vz0 - (t1 - t) * GRAVITATION;
+
+        // Pour corriger la traversée du sol lorsqu'il y a des rebonds de très faible amplitude
+        if(vz1 < 0 && z0 < 0)
+        	vz1 = 0;
+
+        if(z0 >= hauteur) dessous = 0;
 
         x1 = x0 + (t1 - t) * vx0;
         vx1 = vx0;
-//        printf("%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\n", t, x0, vx0, z0, vz0);
-        fprintf(positions, "%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\n", t, x0, vx0, z0, vz0);
+
+        fprintf(positions, "%6.3f\t%6.3f\t%6.3f\t%9.6f\t%6.3f\n", t, x0, vx0, z0, vz0);
+
+        z1 = z0 + (t1 - t) * vz0;
+
         z0 = z1;
         vz0 = vz1;
         x0 = x1;
